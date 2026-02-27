@@ -6,7 +6,7 @@ The Agents SDK includes built-in tracing, collecting a comprehensive record of e
 
     Tracing is enabled by default. There are two ways to disable tracing:
 
-    1. You can globally disable tracing by setting the env var `OPENAI_AGENTS_DISABLE_TRACING=1`
+    1. You can globally disable tracing by setting the env var `OPENAI_AGENTS_DISABLE_TRACING=1`. This disables trace creation entirely, so no processors (including custom processors such as MLflow) will receive traces/spans.
     2. You can disable tracing for a single run by setting [`agents.run.RunConfig.tracing_disabled`][] to `True`
 
 ***For organizations operating under a Zero Data Retention (ZDR) policy using OpenAI's APIs, tracing is unavailable.***
@@ -98,6 +98,23 @@ To customize this default setup, to send traces to alternative or additional bac
 
 1. [`add_trace_processor()`][agents.tracing.add_trace_processor] lets you add an **additional** trace processor that will receive traces and spans as they are ready. This lets you do your own processing in addition to sending traces to OpenAI's backend.
 2. [`set_trace_processors()`][agents.tracing.set_trace_processors] lets you **replace** the default processors with your own trace processors. This means traces will not be sent to the OpenAI backend unless you include a `TracingProcessor` that does so.
+
+### Upcoming behavior change for `add_trace_processor()`
+
+Today, `add_trace_processor()` is additive by default. In a future major version, adding a custom processor will auto-replace the default OpenAI exporter.
+
+To opt in to that future behavior now, set the code-level toggle:
+
+```python
+from agents import add_trace_processor, set_auto_replace_trace_processor_on_add
+
+set_auto_replace_trace_processor_on_add(True)
+add_trace_processor(my_processor)
+```
+
+With this setting enabled, the first custom processor added via `add_trace_processor()` removes the default OpenAI `BatchTraceProcessor`, and subsequent `add_trace_processor()` calls continue to append custom processors only.
+
+If you want explicit replacement behavior independent of this migration setting, use [`set_trace_processors()`][agents.tracing.set_trace_processors].
 
 
 ## Tracing with non-OpenAI models
