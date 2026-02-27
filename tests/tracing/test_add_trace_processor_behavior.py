@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import logging
-
 from agents.tracing import (
     add_trace_processor,
     processors as tracing_processors,
@@ -78,13 +76,12 @@ def test_cold_start_default_provider_registers_openai_batch_processor(monkeypatc
     assert isinstance(processors[0], tracing_processors.BatchTraceProcessor)
 
 
-def test_add_trace_processor_keeps_default_and_warns_once(monkeypatch, caplog) -> None:
+def test_add_trace_processor_keeps_default_when_opt_out(monkeypatch) -> None:
     _reset_global_tracing_state(monkeypatch)
     set_auto_replace_trace_processor_on_add(False)
 
-    with caplog.at_level(logging.WARNING, logger="openai.agents"):
-        add_trace_processor(DummyProcessor())
-        add_trace_processor(DummyProcessor())
+    add_trace_processor(DummyProcessor())
+    add_trace_processor(DummyProcessor())
 
     processors = _registered_processors()
     assert len(processors) == 3
@@ -92,25 +89,16 @@ def test_add_trace_processor_keeps_default_and_warns_once(monkeypatch, caplog) -
     assert isinstance(processors[1], DummyProcessor)
     assert isinstance(processors[2], DummyProcessor)
 
-    warnings = [
-        record.message
-        for record in caplog.records
-        if "set_auto_replace_trace_processor_on_add(True)" in record.message
-    ]
-    assert len(warnings) == 1
 
-
-def test_add_trace_processor_replaces_default_when_opted_in(monkeypatch, caplog) -> None:
+def test_add_trace_processor_replaces_default_when_opted_in(monkeypatch) -> None:
     _reset_global_tracing_state(monkeypatch)
     set_auto_replace_trace_processor_on_add(True)
 
-    with caplog.at_level(logging.WARNING, logger="openai.agents"):
-        add_trace_processor(DummyProcessor())
+    add_trace_processor(DummyProcessor())
 
     processors = _registered_processors()
     assert len(processors) == 1
     assert isinstance(processors[0], DummyProcessor)
-    assert caplog.records == []
 
 
 def test_opted_in_repeated_add_does_not_reintroduce_default(monkeypatch) -> None:

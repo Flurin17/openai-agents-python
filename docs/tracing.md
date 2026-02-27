@@ -99,11 +99,9 @@ To customize this default setup, to send traces to alternative or additional bac
 1. [`add_trace_processor()`][agents.tracing.add_trace_processor] lets you add an **additional** trace processor that will receive traces and spans as they are ready. This lets you do your own processing in addition to sending traces to OpenAI's backend.
 2. [`set_trace_processors()`][agents.tracing.set_trace_processors] lets you **replace** the default processors with your own trace processors. This means traces will not be sent to the OpenAI backend unless you include a `TracingProcessor` that does so.
 
-### Upcoming behavior change for `add_trace_processor()`
+### Configuring `add_trace_processor()` behavior
 
-Today, `add_trace_processor()` is additive by default. In a future major version, adding a custom processor will auto-replace the default OpenAI exporter.
-
-To opt in to that future behavior now, set the code-level toggle:
+`add_trace_processor()` is additive by default. If you want custom processors to replace the default OpenAI exporter when added, set the code-level toggle:
 
 ```python
 from agents import add_trace_processor, set_auto_replace_trace_processor_on_add
@@ -114,7 +112,7 @@ add_trace_processor(my_processor)
 
 With this setting enabled, the first custom processor added via `add_trace_processor()` removes the default OpenAI `BatchTraceProcessor`, and subsequent `add_trace_processor()` calls continue to append custom processors only.
 
-If you want explicit replacement behavior independent of this migration setting, use [`set_trace_processors()`][agents.tracing.set_trace_processors].
+If you always want explicit replacement behavior, use [`set_trace_processors()`][agents.tracing.set_trace_processors].
 
 
 ## Tracing with non-OpenAI models

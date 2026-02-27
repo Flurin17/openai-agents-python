@@ -214,7 +214,6 @@ class DefaultTraceProvider(TraceProvider):
         self._env_disabled: bool | None = None
         self._manual_disabled: bool | None = None
         self._disabled = False
-        self._warned_additive_trace_processor_behavior = False
         self._auto_replace_trace_processor_on_add = False
 
     def register_processor(self, processor: TracingProcessor):
@@ -241,16 +240,6 @@ class DefaultTraceProvider(TraceProvider):
             processors_without_default.append(processor)
             self._multi_processor.set_processors(processors_without_default)
             return
-
-        if default_is_active and not self._warned_additive_trace_processor_behavior:
-            logger.warning(
-                "add_trace_processor() currently appends custom processors alongside the default "
-                "OpenAI tracing exporter. This will change in a future major release to "
-                "auto-replace the default exporter when adding custom processors. "
-                "Call set_auto_replace_trace_processor_on_add(True) to opt in now, "
-                "or use set_trace_processors(...) for explicit replacement."
-            )
-            self._warned_additive_trace_processor_behavior = True
 
         self._multi_processor.add_tracing_processor(processor)
 
